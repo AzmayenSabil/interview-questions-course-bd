@@ -1,13 +1,20 @@
 'use client'
 
-import { HomeView } from '@/features/course/components/HomeView'
-import { HomeViewSkeleton } from '@/components/shared/CourseSkeletons'
+import { use } from 'react'
+import { notFound } from 'next/navigation'
+import { TopicView } from '@/features/course/components/TopicView'
+import { TopicViewSkeleton } from '@/components/shared/CourseSkeletons'
 import { useCourseData } from '@/features/course/hooks/useCourseData'
 
-export default function HomePage() {
+interface TopicPageProps {
+  params: Promise<{ topicId: string }>
+}
+
+export default function TopicPage({ params }: TopicPageProps) {
+  const { topicId } = use(params)
   const { data, isLoading, isError, error } = useCourseData()
 
-  if (isLoading) return <HomeViewSkeleton />
+  if (isLoading) return <TopicViewSkeleton />
 
   if (isError) {
     return (
@@ -23,5 +30,8 @@ export default function HomePage() {
 
   if (!data) return null
 
-  return <HomeView data={data} />
+  const topic = data.topics.find((t) => t.id === topicId)
+  if (!topic) notFound()
+
+  return <TopicView topic={topic} data={data} />
 }
