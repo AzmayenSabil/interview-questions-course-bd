@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { AppProviders } from '@/providers/AppProviders'
 import { AppShell } from '@/components/layouts/AppShell'
+import { PageTracker } from '@/components/analytics/PageTracker'
 import './globals.css'
 
 const geistSans = Geist({
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <AppProviders>
+          <PageTracker />
           <AppShell>{children}</AppShell>
         </AppProviders>
       </body>

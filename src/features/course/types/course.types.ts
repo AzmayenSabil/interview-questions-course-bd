@@ -2,6 +2,7 @@ export type Difficulty = 'easy' | 'medium' | 'hard'
 
 export interface Question {
   id: string
+  title: string
   company: string
   sourceFile: string
   topic: string

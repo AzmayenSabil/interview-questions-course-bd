@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { DifficultyBadge } from '@/components/shared/DifficultyBadge'
 import { MarkdownRenderer } from '@/components/shared/MarkdownRenderer'
 import { useProgressStore } from '@/features/course/store/progressStore'
+import { useAuth } from '@/contexts/AuthContext'
 import type { Question } from '@/features/course/types/course.types'
 
 interface QuestionCardProps {
@@ -25,14 +26,28 @@ function extractTitle(content: string): string {
 
 export function QuestionCard({ question, initialExpanded = false }: QuestionCardProps) {
   const [expanded, setExpanded] = useState(initialExpanded)
-  const { isCompleted, toggleQuestion } = useProgressStore()
+  const { isCompleted, toggleQuestion: localToggle } = useProgressStore()
+  const { user, openAuthModal } = useAuth()
   const done = isCompleted(question.id)
 
-  const title = extractTitle(question.content)
+  const title = question.title || extractTitle(question.content)
+
+  function syncToggle(id: string) {
+    localToggle(id)
+    fetch('/api/progress/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ questionId: id }),
+    }).catch(() => {})
+  }
 
   function handleToggleDone(e: React.MouseEvent) {
     e.stopPropagation()
-    toggleQuestion(question.id)
+    if (!user) {
+      openAuthModal(() => syncToggle(question.id))
+      return
+    }
+    syncToggle(question.id)
   }
 
   return (

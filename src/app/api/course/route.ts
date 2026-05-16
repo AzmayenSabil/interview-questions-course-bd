@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
-import courseData from '@/data/course.json'
+import { getCourseData } from '@/lib/courseDb'
 
-export const dynamic = 'force-static'
+export const dynamic = 'force-dynamic'
 
-export function GET() {
-  return NextResponse.json(courseData)
+export async function GET() {
+  try {
+    const data = await getCourseData()
+    return NextResponse.json(data)
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 })
+  }
 }

@@ -14,6 +14,7 @@ interface ProgressActions {
   isCompleted: (id: string) => boolean
   resetProgress: () => void
   getCompletedIds: () => string[]
+  setCompleted: (ids: string[]) => void
 }
 
 const INITIAL_STATE: ProgressState = {
@@ -42,6 +43,12 @@ export const useProgressStore = create<ProgressState & ProgressActions>()(
       resetProgress: () => set({ completed: {} }),
 
       getCompletedIds: () => Object.keys(get().completed),
+
+      setCompleted: (ids) => {
+        const completed: Record<string, boolean> = {}
+        for (const id of ids) completed[id] = true
+        set({ completed })
+      },
     }),
     {
       name: APP_CONFIG.storageKeys.progress,
