@@ -49,8 +49,8 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: { persistSession: false },
-  // ws required for Node.js < 22 (no native WebSocket)
-  realtime: { transport: ws },
+  // ws required for Node.js < 22 (no native WebSocket); cast needed due to ws type mismatch with WebSocketLikeConstructor
+  realtime: { transport: ws as unknown as typeof WebSocket },
 })
 
 // ---------------------------------------------------------------------------
