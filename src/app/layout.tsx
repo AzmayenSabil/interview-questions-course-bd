@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import { AppProviders } from '@/providers/AppProviders'
 import { AppShell } from '@/components/layouts/AppShell'
 import { PageTracker } from '@/components/analytics/PageTracker'
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <PageTracker />
           <AppShell>{children}</AppShell>
         </AppProviders>
+        <Analytics />
       </body>
     </html>
   )
