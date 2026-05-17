@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { ADMIN_COOKIE, ADMIN_COOKIE_TOKEN } from '@/lib/adminAuth'
+import { ADMIN_COOKIE } from '@/lib/adminAuth'
 import { updateTopic, deleteTopic } from '@/lib/courseDb'
 
 export const dynamic = 'force-dynamic'
 
 function isAdmin(req: NextRequest) {
-  return req.cookies.get(ADMIN_COOKIE)?.value === ADMIN_COOKIE_TOKEN
+  return req.cookies.get(ADMIN_COOKIE)?.value === process.env.ADMIN_SESSION_TOKEN
 }
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

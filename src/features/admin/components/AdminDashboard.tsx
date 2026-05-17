@@ -69,6 +69,11 @@ export function AdminDashboard({ stats, courseStats }: Props) {
           <StatCard label="Unique sessions" value={stats.uniqueSessions} />
           <StatCard label="Sessions today" value={stats.uniqueSessionsToday} />
         </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 mt-3">
+          <StatCard label="Unique visitors" value={stats.uniqueVisitors} />
+          <StatCard label="Visitors today" value={stats.uniqueVisitorsToday} />
+          <StatCard label="Unique users (logged in)" value={stats.uniqueUsers} />
+        </div>
       </section>
 
       {/* Course stats */}

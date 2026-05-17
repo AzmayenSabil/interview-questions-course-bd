@@ -6,6 +6,8 @@ export interface PageView {
   ref: string
   ua: string
   sid: string
+  visitorId: string
+  userId: string | null
 }
 
 export async function recordView(view: Omit<PageView, 'ts'>): Promise<void> {
@@ -15,6 +17,8 @@ export async function recordView(view: Omit<PageView, 'ts'>): Promise<void> {
     ref: view.ref,
     ua: view.ua,
     sid: view.sid,
+    visitor_id: view.visitorId,
+    user_id: view.userId,
   })
 }
 
@@ -24,7 +28,7 @@ export async function getStats() {
 
   const { data, error } = await supabase
     .from('page_views')
-    .select('ts, path, sid, ua')
+    .select('ts, path, sid, ua, visitor_id, user_id')
     .order('ts', { ascending: false })
     .limit(5000)
 
@@ -36,6 +40,8 @@ export async function getStats() {
         sid: r.sid as string,
         ua: r.ua as string,
         ref: '',
+        visitorId: (r.visitor_id as string | null) ?? 'unknown',
+        userId: (r.user_id as string | null) ?? null,
       }))
 
   const todayViews = views.filter((v) => v.ts > now - DAY)
@@ -55,6 +61,11 @@ export async function getStats() {
     thisWeek: weekViews.length,
     uniqueSessions: new Set(views.map((v) => v.sid)).size,
     uniqueSessionsToday: new Set(todayViews.map((v) => v.sid)).size,
+    uniqueVisitors: new Set(views.map((v) => v.visitorId).filter((id) => id !== 'unknown')).size,
+    uniqueVisitorsToday: new Set(
+      todayViews.map((v) => v.visitorId).filter((id) => id !== 'unknown'),
+    ).size,
+    uniqueUsers: new Set(views.map((v) => v.userId).filter(Boolean)).size,
     topPages,
     recent: views.slice(0, 30),
   }

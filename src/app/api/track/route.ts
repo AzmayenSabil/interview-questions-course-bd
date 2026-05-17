@@ -8,6 +8,8 @@ export async function POST(req: NextRequest) {
       referrer?: unknown
       userAgent?: unknown
       sessionId?: unknown
+      visitorId?: unknown
+      userId?: unknown
     }
 
     if (typeof body.pathname !== 'string') {
@@ -23,6 +25,8 @@ export async function POST(req: NextRequest) {
       ref: typeof body.referrer === 'string' ? body.referrer.slice(0, 200) : '',
       ua: typeof body.userAgent === 'string' ? body.userAgent.slice(0, 200) : '',
       sid: typeof body.sessionId === 'string' ? body.sessionId : 'unknown',
+      visitorId: typeof body.visitorId === 'string' ? body.visitorId : 'unknown',
+      userId: typeof body.userId === 'string' ? body.userId : null,
     })
 
     return NextResponse.json({ ok: true })

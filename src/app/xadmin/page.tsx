@@ -3,7 +3,7 @@
 // Password and session token are in src/lib/adminAuth.ts
 import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
-import { ADMIN_COOKIE_TOKEN, ADMIN_COOKIE } from '@/lib/adminAuth'
+import { ADMIN_COOKIE } from '@/lib/adminAuth'
 import { getStats } from '@/lib/analyticsStore'
 import { getCourseStats } from '@/lib/courseDb'
 import { AdminLoginForm } from '@/features/admin/components/AdminLoginForm'
@@ -17,7 +17,7 @@ export default async function AdminPage() {
   const cookieStore = await cookies()
   const session = cookieStore.get(ADMIN_COOKIE)
 
-  if (session?.value !== ADMIN_COOKIE_TOKEN) {
+  if (session?.value !== process.env.ADMIN_SESSION_TOKEN) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <AdminLoginForm />
