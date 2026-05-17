@@ -120,9 +120,13 @@ CREATE TABLE IF NOT EXISTS profiles (
 );
 
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
--- Service role bypasses RLS; no direct client access
-DROP POLICY IF EXISTS "profiles_deny_anon" ON profiles;
-CREATE POLICY "profiles_deny_anon" ON profiles USING (false);
+DROP POLICY IF EXISTS "profiles_deny_anon"   ON profiles;
+DROP POLICY IF EXISTS "profiles_own_select"  ON profiles;
+DROP POLICY IF EXISTS "profiles_own_insert"  ON profiles;
+DROP POLICY IF EXISTS "profiles_own_update"  ON profiles;
+CREATE POLICY "profiles_own_select" ON profiles FOR SELECT USING (auth.uid() = id);
+CREATE POLICY "profiles_own_insert" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "profiles_own_update" ON profiles FOR UPDATE USING (auth.uid() = id);
 
 CREATE OR REPLACE TRIGGER profiles_updated_at
   BEFORE UPDATE ON profiles
@@ -140,7 +144,12 @@ CREATE TABLE IF NOT EXISTS user_progress (
 );
 
 ALTER TABLE user_progress ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "user_progress_deny_anon" ON user_progress;
-CREATE POLICY "user_progress_deny_anon" ON user_progress USING (false);
+DROP POLICY IF EXISTS "user_progress_deny_anon"   ON user_progress;
+DROP POLICY IF EXISTS "user_progress_own_select"  ON user_progress;
+DROP POLICY IF EXISTS "user_progress_own_insert"  ON user_progress;
+DROP POLICY IF EXISTS "user_progress_own_delete"  ON user_progress;
+CREATE POLICY "user_progress_own_select" ON user_progress FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "user_progress_own_insert" ON user_progress FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "user_progress_own_delete" ON user_progress FOR DELETE USING (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_user_progress_user_id ON user_progress(user_id);

@@ -17,7 +17,7 @@ export function GuideView({ guide }: GuideViewProps) {
 
       {guide.sections.map((section, i) => (
         <section key={i} className="space-y-3">
-          <h2 className="text-lg font-bold text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-500 pb-2">
+          <h2 className="text-lg font-bold gradient-text border-b border-border/60 pb-2">
             {section.title}
           </h2>
           <MarkdownRenderer content={section.body} />

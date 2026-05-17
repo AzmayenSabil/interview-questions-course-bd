@@ -37,36 +37,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
   const afterAuthRef = useRef<(() => void) | undefined>(undefined)
 
+  const syncProgressFromDb = useCallback(async () => {
+    const res = await fetch('/api/progress')
+    if (!res.ok) {
+      console.error('[syncProgressFromDb] failed:', res.status)
+      return
+    }
+    const { completed } = (await res.json()) as { completed: string[] }
+    useProgressStore.getState().setCompleted(completed)
+  }, [])
+
   useEffect(() => {
     fetch('/api/auth/me')
       .then((r) => (r.ok ? r.json() : null))
-      .then((data: { user: AuthUser | null } | null) => {
-        if (data?.user) setUser(data.user)
+      .then(async (data: { user: AuthUser | null } | null) => {
+        if (data?.user) {
+          setUser(data.user)
+          await syncProgressFromDb()
+        }
       })
       .finally(() => setIsLoading(false))
-  }, [])
-
-  const syncProgressOnLogin = useCallback(async () => {
-    const res = await fetch('/api/progress')
-    if (!res.ok) return
-    const { completed } = (await res.json()) as { completed: string[] }
-
-    const { getCompletedIds, setCompleted } = useProgressStore.getState()
-    const localIds = getCompletedIds()
-    const dbSet = new Set(completed)
-    const merged = [...new Set([...completed, ...localIds])]
-    setCompleted(merged)
-
-    // Push any localStorage-only items to DB
-    const toSync = localIds.filter((id) => !dbSet.has(id))
-    for (const questionId of toSync) {
-      fetch('/api/progress/toggle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ questionId }),
-      }).catch(() => {})
-    }
-  }, [])
+  }, [syncProgressFromDb])
 
   const handleAuthSuccess = useCallback(
     (newUser: AuthUser) => {
@@ -74,9 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsAuthModalOpen(false)
       const callback = afterAuthRef.current
       afterAuthRef.current = undefined
-      syncProgressOnLogin().then(() => callback?.())
+      syncProgressFromDb().then(() => callback?.())
     },
-    [syncProgressOnLogin],
+    [syncProgressFromDb],
   )
 
   const openAuthModal = useCallback((afterAuth?: () => void) => {
@@ -120,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     await fetch('/api/auth/signout', { method: 'POST' })
     setUser(null)
+    useProgressStore.getState().resetProgress()
   }, [])
 
   const updateDisplayName = useCallback(async (name: string) => {

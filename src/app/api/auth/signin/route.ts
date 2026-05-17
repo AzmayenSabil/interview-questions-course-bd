@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '@/lib/supabase'
-import { sessionCookieOptions } from '@/lib/authUtils'
+import { sessionCookieOptions, refreshCookieOptions } from '@/lib/authUtils'
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
 
     const res = NextResponse.json({ user })
     res.cookies.set(sessionCookieOptions(data.session.access_token))
+    res.cookies.set(refreshCookieOptions(data.session.refresh_token))
     return res
   } catch {
     return NextResponse.json({ error: 'Server error' }, { status: 500 })

@@ -1,26 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-import { getUserFromRequest } from '@/lib/authUtils'
+import { getUserAndTokenFromRequest, createUserClient } from '@/lib/authUtils'
 
 export async function GET(req: NextRequest) {
-  const authUser = await getUserFromRequest(req)
-  if (!authUser) return NextResponse.json({ user: null })
+  const auth = await getUserAndTokenFromRequest(req)
+  if (!auth) return NextResponse.json({ user: null })
 
-  const { data: profile } = await supabase
+  const db = createUserClient(auth.token)
+  const { data: profile, error: profileError } = await db
     .from('profiles')
     .select('display_name')
-    .eq('id', authUser.id)
-    .single()
+    .eq('id', auth.user.id)
+    .maybeSingle()
 
-  const displayName = profile?.display_name || authUser.email!.charAt(0).toUpperCase()
+  if (profileError) console.error('[GET /api/auth/me] profiles read error:', profileError)
+  const displayName = profile?.display_name || auth.user.email!.charAt(0).toUpperCase()
   return NextResponse.json({
-    user: { id: authUser.id, email: authUser.email!, displayName },
+    user: { id: auth.user.id, email: auth.user.email!, displayName },
   })
 }
 
 export async function PATCH(req: NextRequest) {
-  const authUser = await getUserFromRequest(req)
-  if (!authUser) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getUserAndTokenFromRequest(req)
+  if (!auth) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { displayName } = (await req.json()) as { displayName?: unknown }
   if (typeof displayName !== 'string' || !displayName.trim()) {
@@ -28,10 +29,14 @@ export async function PATCH(req: NextRequest) {
   }
 
   const trimmed = displayName.trim().slice(0, 50)
-  const { error } = await supabase
+  const db = createUserClient(auth.token)
+  const { error } = await db
     .from('profiles')
-    .upsert({ id: authUser.id, display_name: trimmed })
+    .upsert({ id: auth.user.id, display_name: trimmed }, { onConflict: 'id' })
 
-  if (error) return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  if (error) {
+    console.error('[PATCH /api/auth/me] profiles upsert error:', error)
+    return NextResponse.json({ error: error.message ?? 'Update failed' }, { status: 500 })
+  }
   return NextResponse.json({ displayName: trimmed })
 }

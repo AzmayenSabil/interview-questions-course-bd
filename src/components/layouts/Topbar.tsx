@@ -15,7 +15,7 @@ import { cn } from '@/utils/cn'
 
 function UserAvatar({ displayName }: { displayName: string }) {
   return (
-    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 text-sm font-bold text-white select-none">
+    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 text-sm font-bold text-white select-none shadow-md shadow-indigo-500/30">
       {displayName.charAt(0).toUpperCase()}
     </span>
   )
@@ -54,7 +54,7 @@ function DisplayNameEditor({
   if (!editing) {
     return (
       <button
-        className="flex w-full items-center justify-between gap-2 rounded px-2 py-1 text-sm hover:bg-muted transition-colors"
+        className="flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-sm hover:bg-muted transition-colors"
         onClick={() => {
           setEditing(true)
           setTimeout(() => inputRef.current?.select(), 0)
@@ -62,7 +62,7 @@ function DisplayNameEditor({
       >
         <span className="font-medium truncate">{value || initialName}</span>
         {saved ? (
-          <Check className="h-3.5 w-3.5 text-green-500 shrink-0" />
+          <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
         ) : (
           <Pencil className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
         )}
@@ -71,7 +71,7 @@ function DisplayNameEditor({
   }
 
   return (
-    <div className="flex items-center gap-1.5 px-2 py-1">
+    <div className="flex items-center gap-1.5 px-2 py-1.5">
       <input
         ref={inputRef}
         value={value}
@@ -80,14 +80,14 @@ function DisplayNameEditor({
           if (e.key === 'Enter') handleSave()
           if (e.key === 'Escape') setEditing(false)
         }}
-        className="flex-1 min-w-0 rounded border border-border bg-background px-2 py-0.5 text-sm outline-none focus:border-indigo-500"
+        className="flex-1 min-w-0 rounded-lg border border-border bg-background px-2 py-1 text-sm outline-none focus:border-indigo-400 dark:focus:border-indigo-500 transition-colors"
         maxLength={50}
         autoFocus
       />
       <button
         onClick={handleSave}
         disabled={saving}
-        className="shrink-0 rounded bg-indigo-600 px-2 py-0.5 text-xs text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="shrink-0 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-2.5 py-1 text-xs font-semibold text-white hover:from-indigo-500 hover:to-violet-500 disabled:opacity-60 transition-all"
       >
         {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Save'}
       </button>
@@ -105,14 +105,17 @@ export function Topbar() {
   const topicsWithQuestions = data?.topics.filter((t) => t.questions.length > 0) ?? []
   const progress = useOverallProgress(topicsWithQuestions)
 
-  function handleReset() {
-    if (window.confirm('Reset all progress? This cannot be undone.')) {
-      resetProgress()
+  async function handleReset() {
+    if (!window.confirm('Reset all progress? This cannot be undone.')) return
+    if (user) {
+      await fetch('/api/progress/reset', { method: 'DELETE' }).catch(() => {})
     }
+    resetProgress()
   }
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center gap-3 border-b border-border bg-card px-4 shadow-sm">
+    <header className="sticky top-0 z-50 flex h-14 items-center gap-3 px-4 glass-nav border-b border-border/50 shadow-[0_1px_0_0_rgba(99,102,241,0.07)]">
+      {/* Mobile menu */}
       <Button
         variant="ghost"
         size="icon"
@@ -123,33 +126,39 @@ export function Topbar() {
         <Menu className="h-5 w-5" />
       </Button>
 
-      <Link href="/" className="font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">
-        Interview BD <span className="font-normal text-muted-foreground text-sm">· Course</span>
+      {/* Logo */}
+      <Link href="/" className="flex items-center gap-2 whitespace-nowrap group">
+        <span className="font-extrabold text-base tracking-tight gradient-text">Interview BD</span>
+        <span className="font-normal text-muted-foreground text-sm hidden sm:inline transition-colors group-hover:text-foreground">
+          · Course
+        </span>
       </Link>
 
       <div className="flex-1" />
 
+      {/* Progress pill */}
       {data && (
-        <div className="hidden sm:flex items-center gap-2 rounded-full bg-muted border border-border px-3 py-1 text-sm">
-          <span className="font-bold text-indigo-600 dark:text-indigo-400">
+        <div className="hidden sm:flex items-center gap-2.5 rounded-full border border-border/60 bg-muted/60 backdrop-blur px-3.5 py-1.5 text-sm">
+          <span className="font-extrabold gradient-text text-sm tabular-nums">
             {progress.percentage}%
           </span>
-          <span className="text-muted-foreground text-xs">overall</span>
           <div
-            className="h-1.5 w-24 rounded-full bg-border overflow-hidden"
+            className="h-1.5 w-20 rounded-full bg-border overflow-hidden"
             role="progressbar"
             aria-valuenow={progress.percentage}
             aria-valuemin={0}
             aria-valuemax={100}
           >
             <div
-              className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+              className="h-full gradient-progress rounded-full transition-all duration-700"
               style={{ width: `${progress.percentage}%` }}
             />
           </div>
+          <span className="text-muted-foreground text-[11px] font-medium">overall</span>
         </div>
       )}
 
+      {/* Reset button */}
       {user && (
         <Button variant="danger" size="sm" onClick={handleReset} aria-label="Reset all progress">
           <RotateCcw className="h-3.5 w-3.5" />
@@ -157,23 +166,26 @@ export function Topbar() {
         </Button>
       )}
 
-      <Button
-        variant="ghost"
-        size="icon"
+      {/* Theme toggle */}
+      <button
         onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
         aria-label="Toggle theme"
+        className="relative h-9 w-9 rounded-xl border border-border/60 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-200"
       >
-        <Sun className="h-4 w-4 rotate-0 scale-100 transition-transform dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-transform dark:rotate-0 dark:scale-100" />
-      </Button>
+        <Sun className="h-4 w-4 rotate-0 scale-100 transition-all duration-300 dark:-rotate-90 dark:scale-0" />
+        <Moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all duration-300 dark:rotate-0 dark:scale-100" />
+      </button>
 
       {/* Auth area */}
       {isLoading ? (
-        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-indigo-200 to-violet-200 dark:from-indigo-900 dark:to-violet-900 animate-pulse" />
       ) : user ? (
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <button
+              className="rounded-full focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 transition-transform hover:scale-105 active:scale-95"
+              aria-label="User menu"
+            >
               <UserAvatar displayName={user.displayName} />
             </button>
           </DropdownMenu.Trigger>
@@ -181,29 +193,32 @@ export function Topbar() {
           <DropdownMenu.Portal>
             <DropdownMenu.Content
               align="end"
-              sideOffset={8}
+              sideOffset={10}
               className={cn(
-                'z-50 min-w-[220px] rounded-xl border border-border bg-card p-1.5 shadow-lg',
+                'z-50 min-w-[230px] rounded-2xl border border-border/60 bg-card/95 p-2 shadow-xl backdrop-blur-xl',
                 'data-[state=open]:animate-in data-[state=closed]:animate-out',
                 'data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
                 'data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
                 'data-[side=bottom]:slide-in-from-top-2',
+                'shadow-[0_16px_48px_rgba(0,0,0,0.12),0_0_0_1px_rgba(99,102,241,0.08)]',
               )}
             >
-              <div className="px-2 py-1.5 mb-1">
-                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
+              <div className="px-3 py-2 mb-1">
+                <p className="text-[11px] text-muted-foreground truncate font-medium">
+                  {user.email}
+                </p>
               </div>
 
-              <DropdownMenu.Label className="px-2 py-0.5 text-xs text-muted-foreground">
+              <DropdownMenu.Label className="px-3 py-0.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                 Display name
               </DropdownMenu.Label>
               <DisplayNameEditor initialName={user.displayName} onSave={updateDisplayName} />
 
-              <DropdownMenu.Separator className="my-1.5 h-px bg-border" />
+              <DropdownMenu.Separator className="my-2 h-px bg-border/60" />
 
               <DropdownMenu.Item
                 onSelect={() => logout()}
-                className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 outline-none transition-colors"
+                className="flex cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 outline-none transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 Sign out
@@ -212,7 +227,7 @@ export function Topbar() {
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
       ) : (
-        <Button variant="ghost" size="sm" onClick={() => openAuthModal()}>
+        <Button variant="subtle" size="sm" onClick={() => openAuthModal()}>
           Sign in
         </Button>
       )}

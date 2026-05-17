@@ -37,7 +37,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <h2 className="text-lg font-semibold text-foreground mb-2">Something went wrong</h2>
             <p className="text-sm text-muted-foreground mb-4">{this.state.error?.message}</p>
             <button
-              className="text-sm text-indigo-600 underline dark:text-indigo-400"
+              className="rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 hover:from-indigo-500 hover:to-violet-500 transition-all duration-200"
               onClick={() => this.setState({ hasError: false, error: undefined })}
             >
               Try again

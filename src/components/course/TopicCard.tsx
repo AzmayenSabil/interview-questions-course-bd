@@ -16,20 +16,35 @@ export function TopicCard({ topic }: TopicCardProps) {
     <Link
       href={`/topics/${topic.id}`}
       className={cn(
-        'group flex flex-col gap-2 rounded-xl border border-border bg-card p-4 shadow-sm',
-        'transition-all hover:border-indigo-400 hover:-translate-y-0.5 hover:shadow-md',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500',
+        'group relative flex flex-col gap-3 rounded-2xl p-4 overflow-hidden',
+        'glass-card shadow-sm',
+        'transition-all duration-300 hover:-translate-y-1',
+        'hover:shadow-[0_12px_36px_rgba(99,102,241,0.14)] dark:hover:shadow-[0_12px_36px_rgba(129,140,248,0.11)]',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       )}
     >
-      <span className="text-2xl" aria-hidden="true">
-        {topic.icon}
-      </span>
-      <p className="text-sm font-semibold text-foreground leading-tight">{topic.name}</p>
-      <p className="text-xs text-muted-foreground">
-        {progress.completed}/{progress.total} done
-      </p>
+      {/* Hover shimmer overlay */}
       <div
-        className="h-1.5 w-full rounded-full bg-border overflow-hidden"
+        className="absolute inset-0 bg-gradient-to-br from-indigo-500/[0.05] via-violet-500/[0.04] to-cyan-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Icon pill */}
+      <div className="relative z-10 w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/50 dark:to-violet-900/40 flex items-center justify-center text-xl shrink-0 shadow-sm">
+        <span aria-hidden="true">{topic.icon}</span>
+      </div>
+
+      {/* Text */}
+      <div className="relative z-10 flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground leading-snug">{topic.name}</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
+          {progress.completed}/{progress.total} done
+        </p>
+      </div>
+
+      {/* Progress bar */}
+      <div
+        className="relative z-10 h-1 w-full rounded-full bg-border/60 overflow-hidden"
         role="progressbar"
         aria-valuenow={progress.percentage}
         aria-valuemin={0}
@@ -38,8 +53,8 @@ export function TopicCard({ topic }: TopicCardProps) {
       >
         <div
           className={cn(
-            'h-full rounded-full transition-all duration-500',
-            progress.isComplete ? 'bg-green-500' : 'bg-indigo-500',
+            'h-full rounded-full transition-all duration-700',
+            progress.isComplete ? 'gradient-progress-complete' : 'gradient-progress',
           )}
           style={{ width: `${progress.percentage}%` }}
         />

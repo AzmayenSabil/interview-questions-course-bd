@@ -16,6 +16,8 @@ export function ProgressRing({
   const offset = circumference - (Math.min(percentage, 100) / 100) * circumference
   const isComplete = percentage >= 100
 
+  const gradientId = `ring-grad-${size}-${Math.round(percentage)}`
+
   return (
     <svg
       width={size}
@@ -25,6 +27,23 @@ export function ProgressRing({
       aria-label={`${percentage}% complete`}
       role="img"
     >
+      <defs>
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
+          {isComplete ? (
+            <>
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#34d399" />
+            </>
+          ) : (
+            <>
+              <stop offset="0%" stopColor="#6366f1" />
+              <stop offset="100%" stopColor="#8b5cf6" />
+            </>
+          )}
+        </linearGradient>
+      </defs>
+
+      {/* Track */}
       <circle
         cx={size / 2}
         cy={size / 2}
@@ -34,31 +53,31 @@ export function ProgressRing({
         strokeWidth={strokeWidth}
         className="text-border"
       />
+
+      {/* Progress arc */}
       <circle
         cx={size / 2}
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="currentColor"
+        stroke={`url(#${gradientId})`}
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
         strokeLinecap="round"
         transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        className={
-          isComplete
-            ? 'text-green-500 transition-all duration-500'
-            : 'text-indigo-500 transition-all duration-500'
-        }
+        style={{ transition: 'stroke-dashoffset 0.5s ease' }}
       />
+
+      {/* Center text */}
       <text
         x={size / 2}
-        y={size / 2 + 3.5}
+        y={size / 2 + size * 0.13}
         textAnchor="middle"
         fontSize={size * 0.28}
         fontWeight="700"
-        fill="currentColor"
-        className={isComplete ? 'text-green-500' : 'text-muted-foreground'}
+        fill={isComplete ? '#10b981' : 'currentColor'}
+        className={isComplete ? '' : 'text-muted-foreground'}
       >
         {isComplete ? '✓' : percentage}
       </text>
