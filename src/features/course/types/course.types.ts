@@ -60,3 +60,11 @@ export interface OverallProgress {
   total: number
   percentage: number
 }
+
+export interface RankingEntry {
+  rank: number
+  displayName: string
+  completed: number
+  total: number
+  percentage: number
+}
