@@ -128,7 +128,8 @@ function CreditsModal({ onClose }: { onClose: () => void }) {
             </div>
             <p className="text-xs text-muted-foreground leading-relaxed">
               Sole developer of this platform — designed and built the entire course experience,
-              from data pipeline to UI, from scratch. Obvioisly using AI. 
+              from data pipeline to UI, from scratch. Obviously using AI. Mostly Claude, but
+              let&apos;s not get into that.
             </p>
             <a
               href="https://www.linkedin.com/in/azmayensabil/"
